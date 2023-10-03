@@ -77,9 +77,9 @@ function slotCadence(symbols) {
         // special symbols in this column
         let special_symbols = [];
         special_symbols = symbols.filter(c => c.column == index);
+        symbol_count += special_symbols.length;
         // check if we can start anticipation
-        if (special_symbols.length >= anticipatorConfig.minToAnticipate) {
-            symbol_count += special_symbols.length;
+        if (symbol_count >= anticipatorConfig.minToAnticipate) {
             anticipate = true;
         }
         final_cadence.push(new_candence);

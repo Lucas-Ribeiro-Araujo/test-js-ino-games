@@ -111,7 +111,7 @@ function slotCadence(symbols: Array<SlotCoordinate>): SlotCadence {
       if (symbol_count >= anticipatorConfig.maxToAnticipate){
         anticipate = false
       }
-      
+
       // get last cadence
       new_candence = final_cadence[index - 1] 
       new_candence += anticipate ?  anticipatorConfig.anticipateCadence : anticipatorConfig.defaultCadence
@@ -120,10 +120,10 @@ function slotCadence(symbols: Array<SlotCoordinate>): SlotCadence {
     // special symbols in this column
     let special_symbols: SlotCoordinate[] = [] 
     special_symbols = symbols.filter(c => c.column == index)
+    symbol_count += special_symbols.length
 
     // check if we can start anticipation
-    if (special_symbols.length >= anticipatorConfig.minToAnticipate) {
-      symbol_count += special_symbols.length
+    if (symbol_count >= anticipatorConfig.minToAnticipate) {
       anticipate = true 
     }
 
