@@ -20,12 +20,12 @@ function call(line: number[]): WinningCombinationsResult {
     const number_symbol = line[index]
 
     // if non-paying skip
-    if (number_symbol > 9) continue
+    if (number_symbol > 9) continue;
 
     // else if is wild symbol save it for later
     else if (number_symbol == 0) {
       wild_symbol_indexes.push(index)
-      continue
+      continue;
     }
 
     // if a combination with this symbol already exist...
@@ -60,7 +60,7 @@ function call(line: number[]): WinningCombinationsResult {
     combinations.push({ number_symbol: 0, indexes: wild_symbol_indexes })
   }
 
-  // fiter invalid combinations
+  // filter invalid combinations
   combinations = combinations.filter((combination) => {
     return (is_array_sequential(combination.indexes) && combination.indexes.length >= 3)
   })
