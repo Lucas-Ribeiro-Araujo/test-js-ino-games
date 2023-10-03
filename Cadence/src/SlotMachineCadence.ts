@@ -1,3 +1,7 @@
+type GameConfig = {
+  columns: number;
+}
+
 type AnticipatorConfig = {
   columnSize: number;
   minToAnticipate: number;
@@ -17,6 +21,7 @@ type RoundsSymbols = {
   roundOne: SpecialSymbol;
   roundTwo: SpecialSymbol;
   roundThree: SpecialSymbol;
+  roundFour: SpecialSymbol;
 };
 
 type SlotCadence = Array<number>;
@@ -25,6 +30,7 @@ type RoundsCadences = {
   roundOne: SlotCadence;
   roundTwo: SlotCadence;
   roundThree: SlotCadence;
+  roundFour: SlotCadence;
 };
 
 /**
@@ -35,12 +41,17 @@ type RoundsCadences = {
  * @param anticipateCadence It's the cadence value when has anticipation.
  * @param defaultCadence It's the cadence value when don't has anticipation.
  */
+
+const gameConfig: GameConfig = {
+  columns: 6,
+}
+
 const anticipatorConfig: AnticipatorConfig = {
-  columnSize: 5,
-  minToAnticipate: 2,
-  maxToAnticipate: 3,
+  columnSize: 6, // number of rows
+  minToAnticipate: 1, // number of symbols to start anticipation
+  maxToAnticipate: 2, // number of symbols to end anticipation
   anticipateCadence: 2,
-  defaultCadence: 0.25,
+  defaultCadence: 1,
 };
 
 /**
@@ -66,12 +77,17 @@ const gameRounds: RoundsSymbols = {
       { column: 4, row: 3 },
     ],
   },
+  // case example from README.md
+  roundFour: { 
+    specialSymbols: [
+      { column: 1, row: 2 },
+      { column: 4, row: 3 },
+    ],
+  },
 };
 
-/**
- * This must be used to get all game rounds cadences.
- */
-const slotMachineCadences: RoundsCadences = { roundOne: [], roundTwo: [], roundThree: [] };
+// This must be used to get all game rounds cadences.
+const slotMachineCadences: RoundsCadences = { roundOne: [], roundTwo: [], roundThree: [], roundFour: [] };
 
 /**
  * This function receives an array of coordinates relative to positions in the slot machine's matrix.
@@ -81,9 +97,40 @@ const slotMachineCadences: RoundsCadences = { roundOne: [], roundTwo: [], roundT
  * @returns SlotCadence Array of numbers representing the slot machine stop cadence.
  */
 function slotCadence(symbols: Array<SlotCoordinate>): SlotCadence {
-  // Magic
-  console.log(symbols);
-  return [10,10,10];
+  let final_cadence: SlotCadence = []
+  let anticipate:boolean = false
+  let symbol_count = 0
+
+  // for every collumn, index = column
+  for (let index = 0; index < gameConfig.columns; index++) {
+    let new_candence: number = 0
+
+    // if is not first column
+    if (index != 0) {
+      // check if we need to stop anticipation
+      if (symbol_count >= anticipatorConfig.maxToAnticipate){
+        anticipate = false
+      }
+      
+      // get last cadence
+      new_candence = final_cadence[index - 1] 
+      new_candence += anticipate ?  anticipatorConfig.anticipateCadence : anticipatorConfig.defaultCadence
+    }
+
+    // special symbols in this column
+    let special_symbols: SlotCoordinate[] = [] 
+    special_symbols = symbols.filter(c => c.column == index)
+
+    // check if we can start anticipation
+    if (special_symbols.length >= anticipatorConfig.minToAnticipate) {
+      symbol_count += special_symbols.length
+      anticipate = true 
+    }
+
+    final_cadence.push(new_candence)
+  }
+
+  return final_cadence;
 }
 
 /**
@@ -95,6 +142,7 @@ function handleCadences(rounds: RoundsSymbols): RoundsCadences {
   slotMachineCadences.roundOne = slotCadence(rounds.roundOne.specialSymbols);
   slotMachineCadences.roundTwo = slotCadence(rounds.roundTwo.specialSymbols);
   slotMachineCadences.roundThree = slotCadence(rounds.roundThree.specialSymbols);
+  slotMachineCadences.roundFour = slotCadence(rounds.roundFour.specialSymbols);
 
   return slotMachineCadences;
 }

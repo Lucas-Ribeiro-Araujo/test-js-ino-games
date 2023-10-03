@@ -7,12 +7,15 @@
  * @param anticipateCadence It's the cadence value when has anticipation.
  * @param defaultCadence It's the cadence value when don't has anticipation.
  */
+const gameConfig = {
+    columns: 6,
+};
 const anticipatorConfig = {
-    columnSize: 5,
-    minToAnticipate: 2,
-    maxToAnticipate: 3,
+    columnSize: 6,
+    minToAnticipate: 1,
+    maxToAnticipate: 2,
     anticipateCadence: 2,
-    defaultCadence: 0.25,
+    defaultCadence: 1,
 };
 /**
  * Game rounds with special symbols position that must be used to generate the SlotCadences.
@@ -37,11 +40,16 @@ const gameRounds = {
             { column: 4, row: 3 },
         ],
     },
+    // case example from README.md
+    roundFour: {
+        specialSymbols: [
+            { column: 1, row: 2 },
+            { column: 4, row: 3 },
+        ],
+    },
 };
-/**
- * This must be used to get all game rounds cadences.
- */
-const slotMachineCadences = { roundOne: [], roundTwo: [], roundThree: [] };
+// This must be used to get all game rounds cadences.
+const slotMachineCadences = { roundOne: [], roundTwo: [], roundThree: [], roundFour: [] };
 /**
  * This function receives an array of coordinates relative to positions in the slot machine's matrix.
  * This array is the positions of the special symbols.
@@ -50,9 +58,33 @@ const slotMachineCadences = { roundOne: [], roundTwo: [], roundThree: [] };
  * @returns SlotCadence Array of numbers representing the slot machine stop cadence.
  */
 function slotCadence(symbols) {
-    // Magic
-    console.log(symbols);
-    return [10, 10, 10];
+    let final_cadence = [];
+    let anticipate = false;
+    let symbol_count = 0;
+    // for every collumn, index = column
+    for (let index = 0; index < gameConfig.columns; index++) {
+        let new_candence = 0;
+        // if is not first column
+        if (index != 0) {
+            // check if we need to stop anticipation
+            if (symbol_count >= anticipatorConfig.maxToAnticipate) {
+                anticipate = false;
+            }
+            // get last cadence
+            new_candence = final_cadence[index - 1];
+            new_candence += anticipate ? anticipatorConfig.anticipateCadence : anticipatorConfig.defaultCadence;
+        }
+        // special symbols in this column
+        let special_symbols = [];
+        special_symbols = symbols.filter(c => c.column == index);
+        // check if we can start anticipation
+        if (special_symbols.length >= anticipatorConfig.minToAnticipate) {
+            symbol_count += special_symbols.length;
+            anticipate = true;
+        }
+        final_cadence.push(new_candence);
+    }
+    return final_cadence;
 }
 /**
  * Get all game rounds and return the final cadences of each.
@@ -63,6 +95,7 @@ function handleCadences(rounds) {
     slotMachineCadences.roundOne = slotCadence(rounds.roundOne.specialSymbols);
     slotMachineCadences.roundTwo = slotCadence(rounds.roundTwo.specialSymbols);
     slotMachineCadences.roundThree = slotCadence(rounds.roundThree.specialSymbols);
+    slotMachineCadences.roundFour = slotCadence(rounds.roundFour.specialSymbols);
     return slotMachineCadences;
 }
 console.log('CADENCES: ', handleCadences(gameRounds));
