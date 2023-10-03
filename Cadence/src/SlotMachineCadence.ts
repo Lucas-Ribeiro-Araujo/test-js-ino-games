@@ -82,7 +82,8 @@ const slotMachineCadences: RoundsCadences = { roundOne: [], roundTwo: [], roundT
  */
 function slotCadence(symbols: Array<SlotCoordinate>): SlotCadence {
   // Magic
-  return [];
+  console.log(symbols);
+  return [10,10,10];
 }
 
 /**
